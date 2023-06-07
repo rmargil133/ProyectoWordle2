@@ -25,76 +25,75 @@ public class JugadorController {
     private final EquipoRepository equipoRepository;
 
     //Obtener todos los jugadores
-    @GetMapping("/jugadores")
+    @GetMapping("/jugador")
     public ResponseEntity<List<?>> getAllJugadores() {
         List<Jugador> jugadores = jugadorRepository.findAll();
         if (jugadores.isEmpty()) {
             return ResponseEntity.notFound().build();
         } else {
-            List<JugadorDTO> DTOJugadorList = jugadores.stream().map(JugadorConverterDTO::convertToDTO).collect(Collectors.toList());
-            return ResponseEntity.ok(DTOJugadorList);
+            List<JugadorDTO> jugadoresDTO = jugadores.stream()
+                    .map(JugadorConverterDTO::convertToDTO)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(jugadoresDTO);
         }
     }
 
     //Obtener un jugador por su id
-    @GetMapping("/jugador{id}")
+    @GetMapping("/jugador/{id}")
     public ResponseEntity<Object> getJugadorByid(@PathVariable Integer id) {
-        Optional<Jugador> jugadorBuscado = jugadorRepository.findByid(id);
+        Optional<Jugador> jugadorBuscado = jugadorRepository.findById(id);
         if (jugadorBuscado.isEmpty()) {
-            return ResponseEntity.ok(jugadorBuscado);
+            return ResponseEntity.notFound().build();
         } else {
             System.out.println(jugadorBuscado.get().getEquipo());
-            return ResponseEntity.ok(jugadorBuscado);
+            return ResponseEntity.ok(jugadorBuscado.get());
         }
     }
 
     //Borrar un jugador por su id
-    @DeleteMapping("jugador{id}")
+    @DeleteMapping("jugador/{id}")
     public ResponseEntity<?> deleteJugadorById(@PathVariable Integer id) {
-        Optional<Jugador> jugadorBuscado = jugadorRepository.findByid(id);
+        Optional<Jugador> jugadorBuscado = jugadorRepository.findById(id);
         if (jugadorBuscado.isEmpty()) {
             return ResponseEntity.notFound().build();
         } else {
-            jugadorRepository.deleteByid(id);
+            jugadorRepository.deleteById(id);
             return ResponseEntity.noContent().build();
         }
     }
 
     //Crear un jugador
-    @PostMapping("jugador")
+    @PostMapping("/jugador")
     public ResponseEntity<?> createJugador(@RequestBody JugadorModifDTO newJugador) {
-        List<Jugador> jugadorExiste = jugadorRepository.findBynombre(newJugador.getnombre);
+        List<Jugador> jugadorExiste = jugadorRepository.findByNombre(newJugador.getNombre());
         if (!jugadorExiste.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } else {
             Jugador jugadorCreado = new Jugador();
-            jugadorCreado.setnombre(newJugador.getNombre());
-            jugadorCreado.setadmin(newJugador.getAdmin());
-            jugadorCreado.setpuntos(0);
-            jugadorCreaado.setavatar("");
-            jugadorCreado.setequipo(null);
+            jugadorCreado.setNombre(newJugador.getNombre());
+            jugadorCreado.setAdmin(newJugador.getAdmin());
+            jugadorCreado.setPuntos(newJugador.getPuntos());
+            jugadorCreado.setAvatar(newJugador.getAvatar());
+            // Obtener la lista de equipos por su ID
+            List<Equipo> equipos = equipoRepository.findById(newJugador.getEquipo_idequipo());
+            if (equipos.isEmpty()) {
+                // Manejar el caso en el que no se encuentre el equipo
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+
+            Equipo equipo = equipos.get(0);
+            jugadorCreado.setEquipo(equipo);
+
             jugadorRepository.save(jugadorCreado);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         }
     }
 
-    //Eliminar un jugador por el id
-    @DeleteMapping("jugador{id}")
-    public ResponseEntity<?> deleteJugador(@PathVariable Integer id) {
-        Optional<Jugador> jugadorBuscado = jugadorRepository.findByid(id);
-        if (jugadorBuscado.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build;
-        } else {
-            jugadorRepository.delete(jugadorBuscado.get());
-            return ResponseEntity.noContent().build();
-        }
-    }
-
     //Modificar un jugador por el id
-    @PutMapping("jugador{id}")
-    public ResponseEntity<?> modifyJugador(@PathVariable Integer id, RequestBody Jugador newJugador) {
-        Optional<Jugador> jugadorBuscado = jugadorRepository.findByid(id);
-        List<Jugador> jugadorExiste = jugadorRepository.findBynombre(newJugador.getNombre());
+    @PutMapping("/jugador/{id}")
+    public ResponseEntity<?> modifyJugador(@RequestBody JugadorModifDTO newJugador, @PathVariable Integer id) {
+        Optional<Jugador> jugadorBuscado = jugadorRepository.findById(id);
+        List<Jugador> jugadorExiste = jugadorRepository.findByNombre(newJugador.getNombre());
         if (jugadorBuscado.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -103,13 +102,16 @@ public class JugadorController {
         }
         else {
             if (newJugador.getNombre() != null
-                    && !newJugador.getNombre().isEmpty()
-                    && !newJugador.getNombre().equals(newJugador.get().getNombre())) {
-                jugadorBuscado.get().setnombre(newJugador.getNombre());
+                    && !newJugador.getNombre().isEmpty()) {
+                jugadorBuscado.get().setNombre(newJugador.getNombre());
             }
-            if (newJugador.getImagen() != null
-                    && !newJugador.getAvatar().equals(jugadorBuscado.get().getavatar())) {
-                jugadorBuscado.get().setavatar(newJugador.getAvatar());
+            if (newJugador.getAvatar() != null
+                    && !newJugador.getAvatar().equals(jugadorBuscado.get().getAvatar())) {
+                jugadorBuscado.get().setAvatar(newJugador.getAvatar());
+            }
+            if (newJugador.getPuntos() != null
+                    && !newJugador.getPuntos().equals(jugadorBuscado.get().getAvatar())){
+                jugadorBuscado.get().setPuntos(newJugador.getPuntos());
             }
             Jugador jugador = jugadorBuscado.get();
             jugadorRepository.save(jugador);

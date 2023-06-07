@@ -18,7 +18,7 @@ public class EquipoController {
     private final JugadorRepository jugadorRepository;
 
     //Obtener todos los equipos
-    @GetMapping("/equipos")
+    @GetMapping("/equipo")
     public ResponseEntity<Object> getAllEquipos(){
         List<Equipo> equipos = equipoRepository.findAll();
         if(equipos.isEmpty()){
@@ -32,7 +32,7 @@ public class EquipoController {
     //Obtener un equipo por el id
     @GetMapping("/equipo/{id}")
     public ResponseEntity<Object> getEquipo(@PathVariable Integer id){
-        Optional<Equipo> equipoBuscado = equipoRepository.findByid(id);
+        List<Equipo> equipoBuscado = equipoRepository.findById(id);
         if(equipoBuscado.isEmpty()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -41,39 +41,40 @@ public class EquipoController {
         }
     }
 
+    //Eliminar un equipo por el id
+    @DeleteMapping("/equipo/{id}")
+    public ResponseEntity<?> deleteEquipo(@PathVariable Integer id){
+        List<Equipo> equipoBuscado = equipoRepository.findById(id);
+        if(equipoBuscado.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        else{
+            equipoRepository.delete(equipoBuscado.get(0));
+            return ResponseEntity.noContent().build();
+        }
+    }
+
     //Crear un Equipo
-    @PostMapping("equipo")
+    @PostMapping("/equipo")
     public ResponseEntity<?> createEquipo(@RequestBody Equipo newEquipo){
-        List<Equipo> equipoExiste = equipoRepository.findBynombre(newEquipo.getnombre());
+        List<Equipo> equipoExiste = equipoRepository.findByNombre(newEquipo.getNombre());
         if(!equipoExiste.isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
         else{
-            newEquipo.setlogo("");
-            newEquipo.setpuntos("");
+            newEquipo.setLogo(newEquipo.getLogo());
+            newEquipo.setPuntos(newEquipo.getPuntos());
             equipoRepository.save(newEquipo);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         }
     }
 
-    //Eliminar un equipo por el id
-    @DeleteMapping("equipo/{id}")
-    public ResponseEntity<?> deleteEquipo(@PathVariable Integer id){
-        Optional<Equipo> equipoBuscado = equipoRepository.findByid(id);
-        if(equipoBuscado.isEmpty()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build;
-        }
-        else{
-            equipoRepository.delete(equipoBuscado.get());
-            return ResponseEntity.noContent().build();
-        }
-    }
 
     //Modificar un equipo por el id
-    @PutMapping("equipo{id}")
-    public ResponseEntity<?> modifyEquipo(@PathVariable Integer id, RequestBody Equipo newEquipo){
-        Optional<Equipo> equipoBuscado = equipoRepository.findByid(id);
-        List<Equipo> equipoExiste = equipoRepository.findBynombre(newEquipo.getnombre());
+    @PutMapping("/equipo/{id}")
+    public ResponseEntity<?> modifyEquipo(@PathVariable Integer id, @RequestBody Equipo newEquipo){
+        List<Equipo> equipoBuscado = equipoRepository.findById(id);
+        List<Equipo> equipoExiste = equipoRepository.findByNombre(newEquipo.getNombre());
         if(equipoBuscado.isEmpty()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -82,15 +83,15 @@ public class EquipoController {
         }
         else {
             if (newEquipo.getNombre() != null
-                    && !newEquipo.getnombre().isEmpty()
-                    && !newEquipo.getnombre().equals(equipoBuscado.get().getnombre())) {
-                equipoBuscado.get().setnombre(newEquipo.getnombre());
+                    && !newEquipo.getNombre().isEmpty()
+                    && !newEquipo.getNombre().equals(equipoBuscado.get(0).getNombre())) {
+                equipoBuscado.get(0).setNombre(newEquipo.getNombre());
             }
-            if (newEquipo.getlogo() != null
-                    && !newEquipo.getlogo().equals(equipoBuscado.get().getlogo())) {
-                equipoBuscado.get().setlogo(newEquipo.getlogo());
+            if (newEquipo.getLogo() != null
+                    && !newEquipo.getLogo().equals(equipoBuscado.get(0).getLogo())) {
+                equipoBuscado.get(0).setLogo(newEquipo.getLogo());
             }
-            Equipo equipo = equipoBuscado.get();
+            Equipo equipo = equipoBuscado.get(0);
             equipoRepository.save(equipo);
             return ResponseEntity.ok(equipo);
         }

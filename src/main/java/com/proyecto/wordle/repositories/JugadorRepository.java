@@ -1,4 +1,8 @@
 package com.proyecto.wordle.repositories;
+import com.proyecto.wordle.model.Jugador;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public class JugadorRepository {
+import java.util.List;
+public interface JugadorRepository extends JpaRepository<Jugador, Integer>{
+    List<Jugador> findByNombre(String nombre);
 }

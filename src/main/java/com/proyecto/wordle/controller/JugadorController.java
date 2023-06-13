@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -21,7 +20,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JugadorController {
     private final JugadorRepository jugadorRepository;
-    private final JugadorConverterDTO jugadorConverterDTO;
     private final EquipoRepository equipoRepository;
 
     //Obtener todos los jugadores
@@ -78,14 +76,14 @@ public class JugadorController {
             List<Equipo> equipos = equipoRepository.findById(newJugador.getEquipo_idequipo());
             if (equipos.isEmpty()) {
                 // Manejar el caso en el que no se encuentre el equipo
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("El jugador ya existe");
             }
 
             Equipo equipo = equipos.get(0);
             jugadorCreado.setEquipo(equipo);
 
             jugadorRepository.save(jugadorCreado);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            return ResponseEntity.status(HttpStatus.CREATED).body("Jugador creado exitosamente.");
         }
     }
 

@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -59,13 +58,13 @@ public class EquipoController {
     public ResponseEntity<?> createEquipo(@RequestBody Equipo newEquipo){
         List<Equipo> equipoExiste = equipoRepository.findByNombre(newEquipo.getNombre());
         if(!equipoExiste.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El equipo ya existe");
         }
         else{
             newEquipo.setLogo(newEquipo.getLogo());
             newEquipo.setPuntos(newEquipo.getPuntos());
             equipoRepository.save(newEquipo);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            return ResponseEntity.status(HttpStatus.CREATED).body("Equipo creado exitosamente");
         }
     }
 

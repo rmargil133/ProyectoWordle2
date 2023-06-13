@@ -1,11 +1,10 @@
 package com.proyecto.wordle.dto.converter;
 
 import com.proyecto.wordle.dto.JugadorDTO;
-import com.proyecto.wordle.model.Equipo;
 import com.proyecto.wordle.model.Jugador;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.modelmapper.ModelMapper;
+
 
 @Component
 @RequiredArgsConstructor
